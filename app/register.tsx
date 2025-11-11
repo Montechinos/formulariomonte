@@ -9,7 +9,9 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
+import { registerSchema } from '../lib/validations/authSchemas';
+import { z } from 'zod';
 
 const RegistroScreen: React.FC = () => {
   // Estados para los campos del formulario
@@ -17,16 +19,62 @@ const RegistroScreen: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
+  
+  // Estados para errores
+  const [errors, setErrors] = useState<{
+    nombre?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
 
   const handleNavigateToLogin = (): void => {
     router.push('/(auth)/login');
   };
 
   const handleRegister = (): void => {
-    console.log('Registro:', { nombre, email, password, confirmPassword });
-    // Aquí irá la lógica de registro
-    // Después de registro exitoso puedes navegar a home:
-    // router.replace('/(tabs)/home');
+    // Limpiar errores previos
+    setErrors({});
+
+    try {
+      // Validar con Zod
+      const validatedData = registerSchema.parse({
+        nombre,
+        email,
+        password,
+        confirmPassword,
+      });
+
+      console.log('✅ Registro exitoso:', validatedData);
+      
+      // Aquí irá la lógica de registro
+      // Por ejemplo: llamar a una API, crear usuario, etc.
+      
+      // Simular registro exitoso
+      alert('¡Registro exitoso!');
+      
+      // Navegar a login o home
+      router.push('/(auth)/login');
+      
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        // Mapear errores de Zod a nuestro estado
+        const fieldErrors: {
+          nombre?: string;
+          email?: string;
+          password?: string;
+          confirmPassword?: string;
+        } = {};
+        
+        error.errors.forEach((err) => {
+          const field = err.path[0] as string;
+          fieldErrors[field as keyof typeof fieldErrors] = err.message;
+        });
+        
+        setErrors(fieldErrors);
+        console.log('❌ Errores de validación:', fieldErrors);
+      }
+    }
   };
 
   return (
