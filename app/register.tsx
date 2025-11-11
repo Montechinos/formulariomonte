@@ -1,5 +1,5 @@
-import "../global.css";
-import React, { useState } from "react";
+import "@/global.css";
+import React from "react";
 import {
   View,
   Text,
@@ -13,50 +13,30 @@ import {
   Alert,
 } from "react-native";
 import { router } from "expo-router";
-import { registerSchema } from "../lib/validations/authSchemas";
-import { z } from "zod";
-import { AUTH_MESSAGES } from "../lib/constants/messages";
+import { useRegisterForm } from "@/components/form/useRegisterForm";
+import { AUTH_MESSAGES } from "@/lib/constants/messages";
 
 const RegistroScreen: React.FC = () => {
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<{
-    nombre?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+  const {
+    nombre,
+    setNombre,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    errors,
+    validate,
+  } = useRegisterForm();
 
-  const handleRegister = (): void => {
-    setErrors({});
-    try {
-      const validatedData = registerSchema.parse({
-        nombre,
-        email,
-        password,
-        confirmPassword,
-      });
-      console.log("✅ Registro exitoso:", validatedData);
+  const handleRegister = () => {
+    const { valid } = validate();
+
+    if (valid) {
+      console.log("✅ Registro exitoso:", { nombre, email });
       Alert.alert("Registro exitoso", AUTH_MESSAGES.SUCCESS_REGISTER);
       router.push("/login");
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors: {
-          nombre?: string;
-          email?: string;
-          password?: string;
-          confirmPassword?: string;
-        } = {};
-        error.errors.forEach((err) => {
-          const field = err.path[0] as string;
-          fieldErrors[field as keyof typeof fieldErrors] = err.message;
-        });
-        setErrors(fieldErrors);
-      } else {
-        Alert.alert("Error", AUTH_MESSAGES.UNKNOWN_ERROR);
-      }
     }
   };
 
@@ -65,7 +45,7 @@ const RegistroScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        className="flex-1"
       >
         <ScrollView
           className="flex-1"
@@ -82,7 +62,7 @@ const RegistroScreen: React.FC = () => {
               </Text>
             </View>
 
-            {/* Nombre */}
+            {/* Campo Nombre */}
             <View className="mb-4">
               <Text className="text-gray-700 font-semibold mb-2 text-base">
                 Nombre
@@ -97,13 +77,11 @@ const RegistroScreen: React.FC = () => {
                 } bg-white text-base`}
               />
               {errors.nombre && (
-                <Text className="text-red-500 mt-1 text-sm">
-                  {errors.nombre}
-                </Text>
+                <Text className="text-red-500 mt-1 text-sm">{errors.nombre}</Text>
               )}
             </View>
 
-            {/* Email */}
+            {/* Campo Email */}
             <View className="mb-4">
               <Text className="text-gray-700 font-semibold mb-2 text-base">
                 Correo Electrónico
@@ -124,7 +102,7 @@ const RegistroScreen: React.FC = () => {
               )}
             </View>
 
-            {/* Contraseña */}
+            {/* Campo Contraseña */}
             <View className="mb-4">
               <Text className="text-gray-700 font-semibold mb-2 text-base">
                 Contraseña
@@ -146,7 +124,7 @@ const RegistroScreen: React.FC = () => {
               )}
             </View>
 
-            {/* Confirmar contraseña */}
+            {/* Confirmar Contraseña */}
             <View className="mb-6">
               <Text className="text-gray-700 font-semibold mb-2 text-base">
                 Confirmar Contraseña
@@ -168,7 +146,7 @@ const RegistroScreen: React.FC = () => {
               )}
             </View>
 
-            {/* Botón */}
+            {/* Botón de Registro */}
             <TouchableOpacity
               onPress={handleRegister}
               className="bg-blue-600 py-4 rounded-lg mb-6 active:bg-blue-700"
@@ -178,11 +156,9 @@ const RegistroScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-            {/* Ir al login */}
+            {/* Ir a Login */}
             <View className="flex-row justify-center items-center">
-              <Text className="text-gray-600 text-base">
-                ¿Ya tienes cuenta?{" "}
-              </Text>
+              <Text className="text-gray-600 text-base">¿Ya tienes cuenta? </Text>
               <TouchableOpacity onPress={() => router.push("/login")}>
                 <Text className="text-blue-600 font-semibold text-base">
                   Inicia sesión

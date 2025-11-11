@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -11,30 +11,18 @@ import {
   Platform,
 } from "react-native";
 import { router } from "expo-router";
-import { loginSchema } from "@/lib/validations/authSchemas";
-import { z } from "zod";
+import { useLoginForm } from "@/components/form/useLoginForm";
 
 const LoginScreen: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const { email, setEmail, password, setPassword, errors, validate } = useLoginForm();
 
-  const handleLogin = (): void => {
-    setErrors({});
-    try {
-      const validatedData = loginSchema.parse({ email, password });
-      console.log("✅ Login exitoso:", validatedData);
+  const handleLogin = () => {
+    const { valid } = validate();
+
+    if (valid) {
+      console.log("✅ Login exitoso:", { email, password });
       alert("Inicio de sesión exitoso 🚀");
       router.push("../(auth)/index");
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors: { email?: string; password?: string } = {};
-        error.errors.forEach((err) => {
-          const field = err.path[0] as string;
-          fieldErrors[field as keyof typeof fieldErrors] = err.message;
-        });
-        setErrors(fieldErrors);
-      }
     }
   };
 
@@ -43,7 +31,7 @@ const LoginScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        className="flex-1"
       >
         <ScrollView
           className="flex-1"
@@ -53,15 +41,13 @@ const LoginScreen: React.FC = () => {
           <View className="flex-1 px-6 justify-center py-8">
             {/* Header */}
             <View className="mb-8">
-              <Text className="text-3xl font-bold text-gray-900 mb-2">
-                Bienvenido
-              </Text>
+              <Text className="text-3xl font-bold text-gray-900 mb-2">Bienvenido</Text>
               <Text className="text-base text-gray-600">
                 Inicia sesión para continuar
               </Text>
             </View>
 
-            {/* Email */}
+            {/* Campo Email */}
             <View className="mb-4">
               <Text className="text-gray-700 font-semibold mb-2 text-base">
                 Correo Electrónico
@@ -82,7 +68,7 @@ const LoginScreen: React.FC = () => {
               )}
             </View>
 
-            {/* Password */}
+            {/* Campo Contraseña */}
             <View className="mb-4">
               <Text className="text-gray-700 font-semibold mb-2 text-base">
                 Contraseña
@@ -98,13 +84,11 @@ const LoginScreen: React.FC = () => {
                 } bg-white text-base`}
               />
               {errors.password && (
-                <Text className="text-red-500 text-sm mt-1">
-                  {errors.password}
-                </Text>
+                <Text className="text-red-500 text-sm mt-1">{errors.password}</Text>
               )}
             </View>
 
-            {/* Botón */}
+            {/* Botón de Login */}
             <TouchableOpacity
               onPress={handleLogin}
               className="bg-blue-600 py-4 rounded-lg mb-6 active:bg-blue-700"
@@ -114,11 +98,9 @@ const LoginScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
 
-            {/* Navegación */}
+            {/* Ir a Registro */}
             <View className="flex-row justify-center items-center">
-              <Text className="text-gray-600 text-base">
-                ¿No tienes cuenta?{" "}
-              </Text>
+              <Text className="text-gray-600 text-base">¿No tienes cuenta? </Text>
               <TouchableOpacity onPress={() => router.push("/register")}>
                 <Text className="text-blue-600 font-semibold text-base">
                   Regístrate
@@ -133,3 +115,4 @@ const LoginScreen: React.FC = () => {
 };
 
 export default LoginScreen;
+
