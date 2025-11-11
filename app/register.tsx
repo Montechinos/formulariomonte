@@ -8,6 +8,8 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
 } from "react-native";
 import { router } from "expo-router";
@@ -36,12 +38,9 @@ const RegistroScreen: React.FC = () => {
         password,
         confirmPassword,
       });
-
       console.log("✅ Registro exitoso:", validatedData);
-
       Alert.alert("Registro exitoso", AUTH_MESSAGES.SUCCESS_REGISTER);
-      router.push("/login"); // ✅ Ruta correcta
-
+      router.push("/login");
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors: {
@@ -64,130 +63,135 @@ const RegistroScreen: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <View className="flex-1 px-6 justify-center py-8">
-          <View className="mb-8">
-            <Text className="text-3xl font-bold text-gray-900 mb-2">
-              Crear Cuenta
-            </Text>
-            <Text className="text-base text-gray-600">
-              Completa los datos para registrarte
-            </Text>
-          </View>
-
-          {/* Campo Nombre */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-semibold mb-2 text-base">
-              Nombre
-            </Text>
-            <TextInput
-              value={nombre}
-              onChangeText={setNombre}
-              placeholder="Ingresa tu nombre completo"
-              placeholderTextColor="#9CA3AF"
-              className={`w-full px-4 py-3 rounded-lg border-2 ${
-                errors.nombre ? "border-red-500" : "border-gray-300"
-              } bg-white text-base`}
-            />
-            {errors.nombre && (
-              <Text className="text-red-500 mt-1 text-sm">
-                {errors.nombre}
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="flex-1 px-6 justify-center py-8">
+            <View className="mb-8">
+              <Text className="text-3xl font-bold text-gray-900 mb-2">
+                Crear Cuenta
               </Text>
-            )}
-          </View>
-
-          {/* Campo Email */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-semibold mb-2 text-base">
-              Correo Electrónico
-            </Text>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="correo@ejemplo.com"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              className={`w-full px-4 py-3 rounded-lg border-2 ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              } bg-white text-base`}
-            />
-            {errors.email && (
-              <Text className="text-red-500 mt-1 text-sm">{errors.email}</Text>
-            )}
-          </View>
-
-          {/* Campo Contraseña */}
-          <View className="mb-4">
-            <Text className="text-gray-700 font-semibold mb-2 text-base">
-              Contraseña
-            </Text>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Mínimo 8 caracteres"
-              placeholderTextColor="#9CA3AF"
-              secureTextEntry
-              className={`w-full px-4 py-3 rounded-lg border-2 ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } bg-white text-base`}
-            />
-            {errors.password && (
-              <Text className="text-red-500 mt-1 text-sm">
-                {errors.password}
+              <Text className="text-base text-gray-600">
+                Completa los datos para registrarte
               </Text>
-            )}
-          </View>
+            </View>
 
-          {/* Campo Confirmar Contraseña */}
-          <View className="mb-6">
-            <Text className="text-gray-700 font-semibold mb-2 text-base">
-              Confirmar Contraseña
-            </Text>
-            <TextInput
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Repite tu contraseña"
-              placeholderTextColor="#9CA3AF"
-              secureTextEntry
-              className={`w-full px-4 py-3 rounded-lg border-2 ${
-                errors.confirmPassword ? "border-red-500" : "border-gray-300"
-              } bg-white text-base`}
-            />
-            {errors.confirmPassword && (
-              <Text className="text-red-500 mt-1 text-sm">
-                {errors.confirmPassword}
+            {/* Nombre */}
+            <View className="mb-4">
+              <Text className="text-gray-700 font-semibold mb-2 text-base">
+                Nombre
               </Text>
-            )}
-          </View>
+              <TextInput
+                value={nombre}
+                onChangeText={setNombre}
+                placeholder="Ingresa tu nombre completo"
+                placeholderTextColor="#9CA3AF"
+                className={`w-full px-4 py-3 rounded-lg border-2 ${
+                  errors.nombre ? "border-red-500" : "border-gray-300"
+                } bg-white text-base`}
+              />
+              {errors.nombre && (
+                <Text className="text-red-500 mt-1 text-sm">
+                  {errors.nombre}
+                </Text>
+              )}
+            </View>
 
-          {/* Botón de Registro */}
-          <TouchableOpacity
-            onPress={handleRegister}
-            className="bg-blue-600 py-4 rounded-lg mb-6 active:bg-blue-700"
-          >
-            <Text className="text-white text-center font-bold text-base">
-              Registrarse
-            </Text>
-          </TouchableOpacity>
+            {/* Email */}
+            <View className="mb-4">
+              <Text className="text-gray-700 font-semibold mb-2 text-base">
+                Correo Electrónico
+              </Text>
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="correo@ejemplo.com"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                className={`w-full px-4 py-3 rounded-lg border-2 ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                } bg-white text-base`}
+              />
+              {errors.email && (
+                <Text className="text-red-500 mt-1 text-sm">{errors.email}</Text>
+              )}
+            </View>
 
-          {/* Navegación a Login */}
-          <View className="flex-row justify-center items-center">
-            <Text className="text-gray-600 text-base">
-              ¿Ya tienes cuenta?{" "}
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/login")}>
-              <Text className="text-blue-600 font-semibold text-base">
-                Inicia sesión
+            {/* Contraseña */}
+            <View className="mb-4">
+              <Text className="text-gray-700 font-semibold mb-2 text-base">
+                Contraseña
+              </Text>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Mínimo 8 caracteres"
+                placeholderTextColor="#9CA3AF"
+                secureTextEntry
+                className={`w-full px-4 py-3 rounded-lg border-2 ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                } bg-white text-base`}
+              />
+              {errors.password && (
+                <Text className="text-red-500 mt-1 text-sm">
+                  {errors.password}
+                </Text>
+              )}
+            </View>
+
+            {/* Confirmar contraseña */}
+            <View className="mb-6">
+              <Text className="text-gray-700 font-semibold mb-2 text-base">
+                Confirmar Contraseña
+              </Text>
+              <TextInput
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Repite tu contraseña"
+                placeholderTextColor="#9CA3AF"
+                secureTextEntry
+                className={`w-full px-4 py-3 rounded-lg border-2 ${
+                  errors.confirmPassword ? "border-red-500" : "border-gray-300"
+                } bg-white text-base`}
+              />
+              {errors.confirmPassword && (
+                <Text className="text-red-500 mt-1 text-sm">
+                  {errors.confirmPassword}
+                </Text>
+              )}
+            </View>
+
+            {/* Botón */}
+            <TouchableOpacity
+              onPress={handleRegister}
+              className="bg-blue-600 py-4 rounded-lg mb-6 active:bg-blue-700"
+            >
+              <Text className="text-white text-center font-bold text-base">
+                Registrarse
               </Text>
             </TouchableOpacity>
+
+            {/* Ir al login */}
+            <View className="flex-row justify-center items-center">
+              <Text className="text-gray-600 text-base">
+                ¿Ya tienes cuenta?{" "}
+              </Text>
+              <TouchableOpacity onPress={() => router.push("/login")}>
+                <Text className="text-blue-600 font-semibold text-base">
+                  Inicia sesión
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
