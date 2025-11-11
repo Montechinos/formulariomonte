@@ -9,12 +9,9 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
+import { Link, router } from 'expo-router';
 
-interface RegistroScreenProps {
-  navigation?: any; // Puedes tipar con NavigationProp si usas React Navigation
-}
-
-const RegistroScreen: React.FC<RegistroScreenProps> = ({ navigation }) => {
+const RegistroScreen: React.FC = () => {
   // Estados para los campos del formulario
   const [nombre, setNombre] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -22,14 +19,14 @@ const RegistroScreen: React.FC<RegistroScreenProps> = ({ navigation }) => {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
 
   const handleNavigateToLogin = (): void => {
-    // Navegación simulada - reemplazar con navigation.navigate('Login')
-    console.log('Navegar a Login');
-    // navigation?.navigate('Login');
+    router.push('/(auth)/login');
   };
 
   const handleRegister = (): void => {
     console.log('Registro:', { nombre, email, password, confirmPassword });
     // Aquí irá la lógica de registro
+    // Después de registro exitoso puedes navegar a home:
+    // router.replace('/(tabs)/home');
   };
 
   return (

@@ -1,4 +1,3 @@
-import "../global.css";
 import React, { useState } from 'react';
 import {
   View,
@@ -9,25 +8,22 @@ import {
   StatusBar,
   ScrollView,
 } from 'react-native';
+import { Link, router } from 'expo-router';
 
-interface LoginScreenProps {
-  navigation?: any; // Puedes tipar con NavigationProp si usas React Navigation
-}
-
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+const LoginScreen: React.FC = () => {
   // Estados para los campos del formulario
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
   const handleNavigateToRegister = (): void => {
-    // Navegación simulada - reemplazar con navigation.navigate('Registro')
-    console.log('Navegar a Registro');
-    // navigation?.navigate('Registro');
+    router.push('/register');
   };
 
   const handleLogin = (): void => {
     console.log('Login:', { email, password });
     // Aquí irá la lógica de login
+    // Después de login exitoso puedes navegar a home:
+    // router.replace('/(tabs)/home');
   };
 
   return (
