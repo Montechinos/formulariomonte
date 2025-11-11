@@ -1,5 +1,5 @@
-import "@/global.css";
-import React from "react";
+import "../global.css";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,166 +8,195 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
 } from "react-native";
 import { router } from "expo-router";
-import { useRegisterForm } from "@/components/form/useRegisterForm";
-import { AUTH_MESSAGES } from "@/lib/constants/messages";
+import { registerSchema } from "../lib/validations/authSchemas";
+import { z } from "zod";
+import Toast from "react-native-toast-message";
 
 const RegistroScreen: React.FC = () => {
-  const {
-    nombre,
-    setNombre,
-    email,
-    setEmail,
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    errors,
-    validate,
-  } = useRegisterForm();
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState<{
+    nombre?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
 
-  const handleRegister = () => {
-    const { valid } = validate();
+  const handleRegister = (): void => {
+    setErrors({});
+    try {
+      const validatedData = registerSchema.parse({
+        nombre,
+        email,
+        password,
+        confirmPassword,
+      });
 
-    if (valid) {
-      console.log("✅ Registro exitoso:", { nombre, email });
-      Alert.alert("Registro exitoso", AUTH_MESSAGES.SUCCESS_REGISTER);
+      console.log("✅ Registro exitoso:", validatedData);
+
+      // ✅ Toast de éxito
+      Toast.show({
+        type: "success",
+        text1: "Cuenta creada 🎉",
+        text2: "Ahora puedes iniciar sesión",
+        visibilityTime: 3000,
+      });
+
       router.push("/login");
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: {
+          nombre?: string;
+          email?: string;
+          password?: string;
+          confirmPassword?: string;
+        } = {};
+        error.errors.forEach((err) => {
+          const field = err.path[0] as string;
+          fieldErrors[field as keyof typeof fieldErrors] = err.message;
+        });
+        setErrors(fieldErrors);
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Error inesperado 😥",
+          text2: "Intenta nuevamente.",
+        });
+      }
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      <ScrollView
         className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="flex-1 px-6 justify-center py-8">
-            <View className="mb-8">
-              <Text className="text-3xl font-bold text-gray-900 mb-2">
-                Crear Cuenta
-              </Text>
-              <Text className="text-base text-gray-600">
-                Completa los datos para registrarte
-              </Text>
-            </View>
+        <View className="flex-1 px-6 justify-center py-8">
+          <View className="mb-8">
+            <Text className="text-3xl font-bold text-gray-900 mb-2">
+              Crear Cuenta
+            </Text>
+            <Text className="text-base text-gray-600">
+              Completa los datos para registrarte
+            </Text>
+          </View>
 
-            {/* Campo Nombre */}
-            <View className="mb-4">
-              <Text className="text-gray-700 font-semibold mb-2 text-base">
-                Nombre
+          {/* Campo Nombre */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-semibold mb-2 text-base">
+              Nombre
+            </Text>
+            <TextInput
+              value={nombre}
+              onChangeText={setNombre}
+              placeholder="Ingresa tu nombre completo"
+              placeholderTextColor="#9CA3AF"
+              className={`w-full px-4 py-3 rounded-lg border-2 ${
+                errors.nombre ? "border-red-500" : "border-gray-300"
+              } bg-white text-base`}
+            />
+            {errors.nombre && (
+              <Text className="text-red-500 mt-1 text-sm">
+                {errors.nombre}
               </Text>
-              <TextInput
-                value={nombre}
-                onChangeText={setNombre}
-                placeholder="Ingresa tu nombre completo"
-                placeholderTextColor="#9CA3AF"
-                className={`w-full px-4 py-3 rounded-lg border-2 ${
-                  errors.nombre ? "border-red-500" : "border-gray-300"
-                } bg-white text-base`}
-              />
-              {errors.nombre && (
-                <Text className="text-red-500 mt-1 text-sm">{errors.nombre}</Text>
-              )}
-            </View>
+            )}
+          </View>
 
-            {/* Campo Email */}
-            <View className="mb-4">
-              <Text className="text-gray-700 font-semibold mb-2 text-base">
-                Correo Electrónico
+          {/* Campo Email */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-semibold mb-2 text-base">
+              Correo Electrónico
+            </Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="correo@ejemplo.com"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              className={`w-full px-4 py-3 rounded-lg border-2 ${
+                errors.email ? "border-red-500" : "border-gray-300"
+              } bg-white text-base`}
+            />
+            {errors.email && (
+              <Text className="text-red-500 mt-1 text-sm">{errors.email}</Text>
+            )}
+          </View>
+
+          {/* Campo Contraseña */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-semibold mb-2 text-base">
+              Contraseña
+            </Text>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Mínimo 8 caracteres"
+              placeholderTextColor="#9CA3AF"
+              secureTextEntry
+              className={`w-full px-4 py-3 rounded-lg border-2 ${
+                errors.password ? "border-red-500" : "border-gray-300"
+              } bg-white text-base`}
+            />
+            {errors.password && (
+              <Text className="text-red-500 mt-1 text-sm">
+                {errors.password}
               </Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="correo@ejemplo.com"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                className={`w-full px-4 py-3 rounded-lg border-2 ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                } bg-white text-base`}
-              />
-              {errors.email && (
-                <Text className="text-red-500 mt-1 text-sm">{errors.email}</Text>
-              )}
-            </View>
+            )}
+          </View>
 
-            {/* Campo Contraseña */}
-            <View className="mb-4">
-              <Text className="text-gray-700 font-semibold mb-2 text-base">
-                Contraseña
+          {/* Campo Confirmar Contraseña */}
+          <View className="mb-6">
+            <Text className="text-gray-700 font-semibold mb-2 text-base">
+              Confirmar Contraseña
+            </Text>
+            <TextInput
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Repite tu contraseña"
+              placeholderTextColor="#9CA3AF"
+              secureTextEntry
+              className={`w-full px-4 py-3 rounded-lg border-2 ${
+                errors.confirmPassword ? "border-red-500" : "border-gray-300"
+              } bg-white text-base`}
+            />
+            {errors.confirmPassword && (
+              <Text className="text-red-500 mt-1 text-sm">
+                {errors.confirmPassword}
               </Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Mínimo 8 caracteres"
-                placeholderTextColor="#9CA3AF"
-                secureTextEntry
-                className={`w-full px-4 py-3 rounded-lg border-2 ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                } bg-white text-base`}
-              />
-              {errors.password && (
-                <Text className="text-red-500 mt-1 text-sm">
-                  {errors.password}
-                </Text>
-              )}
-            </View>
+            )}
+          </View>
 
-            {/* Confirmar Contraseña */}
-            <View className="mb-6">
-              <Text className="text-gray-700 font-semibold mb-2 text-base">
-                Confirmar Contraseña
-              </Text>
-              <TextInput
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholder="Repite tu contraseña"
-                placeholderTextColor="#9CA3AF"
-                secureTextEntry
-                className={`w-full px-4 py-3 rounded-lg border-2 ${
-                  errors.confirmPassword ? "border-red-500" : "border-gray-300"
-                } bg-white text-base`}
-              />
-              {errors.confirmPassword && (
-                <Text className="text-red-500 mt-1 text-sm">
-                  {errors.confirmPassword}
-                </Text>
-              )}
-            </View>
+          {/* Botón de Registro */}
+          <TouchableOpacity
+            onPress={handleRegister}
+            className="bg-blue-600 py-4 rounded-lg mb-6 active:bg-blue-700"
+          >
+            <Text className="text-white text-center font-bold text-base">
+              Registrarse
+            </Text>
+          </TouchableOpacity>
 
-            {/* Botón de Registro */}
-            <TouchableOpacity
-              onPress={handleRegister}
-              className="bg-blue-600 py-4 rounded-lg mb-6 active:bg-blue-700"
-            >
-              <Text className="text-white text-center font-bold text-base">
-                Registrarse
+          {/* Navegación a Login */}
+          <View className="flex-row justify-center items-center">
+            <Text className="text-gray-600 text-base">
+              ¿Ya tienes cuenta?{" "}
+            </Text>
+            <TouchableOpacity onPress={() => router.push("/login")}>
+              <Text className="text-blue-600 font-semibold text-base">
+                Inicia sesión
               </Text>
             </TouchableOpacity>
-
-            {/* Ir a Login */}
-            <View className="flex-row justify-center items-center">
-              <Text className="text-gray-600 text-base">¿Ya tienes cuenta? </Text>
-              <TouchableOpacity onPress={() => router.push("/login")}>
-                <Text className="text-blue-600 font-semibold text-base">
-                  Inicia sesión
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
