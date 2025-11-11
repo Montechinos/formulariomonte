@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,30 +7,54 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
-} from 'react-native';
-import { Link, router } from 'expo-router';
+} from "react-native";
+import { router } from "expo-router";
+import { loginSchema } from "@/lib/validations/authSchemas"; // ✅ Aquí está la corrección
+import { z } from "zod";
 
 const LoginScreen: React.FC = () => {
-  // Estados para los campos del formulario
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
+  // Estados
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleNavigateToRegister = (): void => {
-    router.push('/register');
-  };
+  // Errores de validación
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   const handleLogin = (): void => {
-    console.log('Login:', { email, password });
-    // Aquí irá la lógica de login
-    // Después de login exitoso puedes navegar a home:
-    // router.replace('/(tabs)/home');
+    setErrors({});
+
+    try {
+      // ✅ Validación con Zod
+      const validatedData = loginSchema.parse({ email, password });
+
+      console.log("✅ Login exitoso:", validatedData);
+
+      // Aquí va tu lógica de Firebase o API
+      alert("Inicio de sesión exitoso 🚀");
+
+      // Navegar después del login (ajusta la ruta según tu estructura)
+      router.push("../(auth)/index");
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const fieldErrors: { email?: string; password?: string } = {};
+        error.errors.forEach((err) => {
+          const field = err.path[0] as string;
+          fieldErrors[field as keyof typeof fieldErrors] = err.message;
+        });
+        setErrors(fieldErrors);
+        console.log("❌ Errores de validación:", fieldErrors);
+      }
+    }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" />
-      
-      <ScrollView 
+
+      <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
@@ -46,45 +70,47 @@ const LoginScreen: React.FC = () => {
             </Text>
           </View>
 
-          {/* Formulario */}
-          <View className="mb-6">
-            {/* Campo Email */}
-            <View className="mb-4">
-              <Text className="text-gray-700 font-semibold mb-2 text-base">
-                Correo Electrónico
-              </Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="correo@ejemplo.com"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-base"
-              />
-            </View>
+          {/* Campo Email */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-semibold mb-2 text-base">
+              Correo Electrónico
+            </Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="correo@ejemplo.com"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              className={`w-full px-4 py-3 rounded-lg border-2 ${
+                errors.email ? "border-red-500" : "border-gray-300"
+              } bg-white text-base`}
+            />
+            {errors.email && (
+              <Text className="text-red-500 text-sm mt-1">{errors.email}</Text>
+            )}
+          </View>
 
-            {/* Campo Contraseña */}
-            <View className="mb-4">
-              <Text className="text-gray-700 font-semibold mb-2 text-base">
-                Contraseña
+          {/* Campo Contraseña */}
+          <View className="mb-4">
+            <Text className="text-gray-700 font-semibold mb-2 text-base">
+              Contraseña
+            </Text>
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Ingresa tu contraseña"
+              placeholderTextColor="#9CA3AF"
+              secureTextEntry
+              className={`w-full px-4 py-3 rounded-lg border-2 ${
+                errors.password ? "border-red-500" : "border-gray-300"
+              } bg-white text-base`}
+            />
+            {errors.password && (
+              <Text className="text-red-500 text-sm mt-1">
+                {errors.password}
               </Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Ingresa tu contraseña"
-                placeholderTextColor="#9CA3AF"
-                secureTextEntry
-                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-white text-base"
-              />
-            </View>
-
-            {/* Olvidaste tu contraseña */}
-            <TouchableOpacity className="self-end mb-2">
-              <Text className="text-blue-600 text-sm font-medium">
-                ¿Olvidaste tu contraseña?
-              </Text>
-            </TouchableOpacity>
+            )}
           </View>
 
           {/* Botón de Login */}
@@ -97,12 +123,12 @@ const LoginScreen: React.FC = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* Navegación a Registro */}
+          {/* Ir a Registro */}
           <View className="flex-row justify-center items-center">
             <Text className="text-gray-600 text-base">
-              ¿No tienes cuenta?{' '}
+              ¿No tienes cuenta?{" "}
             </Text>
-            <TouchableOpacity onPress={handleNavigateToRegister}>
+            <TouchableOpacity onPress={() => router.push("/register")}>
               <Text className="text-blue-600 font-semibold text-base">
                 Regístrate
               </Text>

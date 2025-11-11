@@ -1,44 +1,46 @@
 import { z } from 'zod';
+import { AUTH_MESSAGES } from '../constants/messages';
 
 // Schema para Login
 export const loginSchema = z.object({
   email: z
     .string()
-    .min(1, 'El correo es requerido')
-    .email('Ingresa un correo válido'),
+    .min(1, AUTH_MESSAGES.VALIDATION.EMAIL_REQUIRED)
+    .email(AUTH_MESSAGES.VALIDATION.EMAIL_INVALID),
   password: z
     .string()
-    .min(1, 'La contraseña es requerida')
-    .min(8, 'La contraseña debe tener al menos 8 caracteres'),
+    .min(1, AUTH_MESSAGES.VALIDATION.PASSWORD_REQUIRED)
+    .min(8, AUTH_MESSAGES.VALIDATION.PASSWORD_MIN),
 });
 
 // Schema para Registro
-export const registerSchema = z.object({
-  nombre: z
-    .string()
-    .min(1, 'El nombre es requerido')
-    .min(2, 'El nombre debe tener al menos 2 caracteres')
-    .max(50, 'El nombre no puede exceder 50 caracteres'),
-  email: z
-    .string()
-    .min(1, 'El correo es requerido')
-    .email('Ingresa un correo válido'),
-  password: z
-    .string()
-    .min(1, 'La contraseña es requerida')
-    .min(8, 'La contraseña debe tener al menos 8 caracteres')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      'La contraseña debe contener al menos una mayúscula, una minúscula, un número y un carácter especial'
-    ),
-  confirmPassword: z
-    .string()
-    .min(1, 'Debes confirmar tu contraseña'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Las contraseñas no coinciden',
-  path: ['confirmPassword'],
-});
+export const registerSchema = z
+  .object({
+    nombre: z
+      .string()
+      .min(1, AUTH_MESSAGES.VALIDATION.NAME_REQUIRED)
+      .min(2, AUTH_MESSAGES.VALIDATION.NAME_MIN)
+      .max(50, AUTH_MESSAGES.VALIDATION.NAME_MAX),
+    email: z
+      .string()
+      .min(1, AUTH_MESSAGES.VALIDATION.EMAIL_REQUIRED)
+      .email(AUTH_MESSAGES.VALIDATION.EMAIL_INVALID),
+    password: z
+      .string()
+      .min(1, AUTH_MESSAGES.VALIDATION.PASSWORD_REQUIRED)
+      .min(8, AUTH_MESSAGES.VALIDATION.PASSWORD_MIN)
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+        AUTH_MESSAGES.VALIDATION.PASSWORD_COMPLEXITY
+      ),
+    confirmPassword: z
+      .string()
+      .min(1, AUTH_MESSAGES.VALIDATION.CONFIRM_PASSWORD_REQUIRED),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: AUTH_MESSAGES.VALIDATION.PASSWORDS_NOT_MATCH,
+    path: ['confirmPassword'],
+  });
 
-// Tipos TypeScript derivados de los schemas
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
